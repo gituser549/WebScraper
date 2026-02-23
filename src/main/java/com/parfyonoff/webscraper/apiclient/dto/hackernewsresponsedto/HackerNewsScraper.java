@@ -8,6 +8,8 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.*;
 
+import static com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto.HackerNewsScraper.HnColumns.*;
+
 public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
     private final URI uri;
     public final String basicURI = "https://hn.algolia.com/api/v1/search?query=devops&tags=story&hitsPerPage=20&page=0";
@@ -65,12 +67,12 @@ public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
             }
 
             if (tags.length() > 0) {
-                item.put("tags", tags.substring(0, tags.length() - 1));
+                item.put(TAGS.getColumnName(), tags.substring(0, tags.length() - 1));
             } else {
-                item.put("tags", "[]");
+                item.put(TAGS.getColumnName(), "[]");
             }
 
-            item.put("author", curHitsDto.author());
+            item.put(AUTHOR.getColumnName(), curHitsDto.author());
 
             StringBuffer children = new StringBuffer();
             for (Integer child : curHitsDto.children()) {
@@ -79,19 +81,54 @@ public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
             }
 
             if (children.length() > 0) {
-                item.put("children", children.substring(0, children.length() - 1));
+                item.put(CHILDREN.getColumnName(), children.substring(0, children.length() - 1));
             } else {
-                item.put("children", "[]");
+                item.put(CHILDREN.getColumnName(), "[]");
             }
 
-            item.put("createdAt", curHitsDto.createdAt());
-            item.put("numComments", curHitsDto.numComments().toString());
-            item.put("storyId", String.valueOf(curHitsDto.storyId()));
-            item.put("title", String.valueOf(curHitsDto.title()));
-            item.put("updatedAt", curHitsDto.updatedAt());
-            item.put("url", curHitsDto.url());
+            item.put(CREATED_AT.getColumnName(), curHitsDto.createdAt());
+            item.put(NUM_COMMENTS.getColumnName(), curHitsDto.numComments().toString());
+            item.put(STORY_ID.getColumnName(), String.valueOf(curHitsDto.storyId()));
+            item.put(TITLE.getColumnName(), String.valueOf(curHitsDto.title()));
+            item.put(UPDATED_AT.getColumnName(), curHitsDto.updatedAt());
+            item.put(URL.getColumnName(), curHitsDto.url());
         }
 
         return result;
+    }
+
+    @Override
+    public List<String> getFlatColumns() {
+        return Arrays.stream(values())
+                .map(HackerNewsScraper.HnColumns::getColumnName)
+                .toList();
+    }
+
+    public enum HnColumns {
+        TAGS("hn_tags"),
+        AUTHOR("hn_author"),
+        CHILDREN("hn_children"),
+        CREATED_AT("hn_createdAt"),
+        NUM_COMMENTS("hn_numComments"),
+        STORY_ID("hn_storyId"),
+        TITLE("hn_title"),
+        UPDATED_AT("hn_updatedAt"),
+        URL("hn_url");
+
+        private final String columnName;
+
+        HnColumns(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public static List<String> asList() {
+            return Arrays.stream(values())
+                    .map(HackerNewsScraper.HnColumns::getColumnName)
+                    .toList();
+        }
     }
 }

@@ -6,4 +6,5 @@ import java.util.Map;
 public interface APIClient<T> {
     T fetchToDTO();
     List<Map<String, String>> fetchToMap();
+    List<String> getFlatColumns();
 }

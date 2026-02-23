@@ -13,19 +13,27 @@ import java.util.Map;
 
 public class CsvWriter {
     private final static CsvMapper csvMapper = new CsvMapper();
+    private CsvSchema csvSchema;
 
-    public static void write(File file, List<Map<String, String>> aggregatedData) {
+    public CsvWriter(List<String> columnsNames) {
+        if (columnsNames == null || columnsNames.isEmpty()) {
+            throw new WriterException("columns cannot be null or empty");
+        }
+
+        CsvSchema.Builder builder = CsvSchema.builder();
+        for (String columnName : columnsNames) {
+            builder.addColumn(columnName);
+        }
+
+        csvSchema = builder.setUseHeader(true).build();
+    }
+
+    public void write(File file, List<Map<String, String>> aggregatedData) {
         try {
             if (aggregatedData.isEmpty()) {
                 return;
             }
 
-            CsvSchema.Builder builder = CsvSchema.builder();
-            for (String columnName : aggregatedData.getFirst().keySet()) {
-                builder.addColumn(columnName);
-            }
-
-            CsvSchema csvSchema = builder.setUseHeader(true).build();
             csvMapper.writer(csvSchema).writeValue(file, aggregatedData);
         } catch (StreamWriteException exc) {
             throw new WriterException("Can't write data to csv file: " + exc.getMessage());
@@ -36,7 +44,7 @@ public class CsvWriter {
         }
     }
 
-    public static void append(File file, List<Map<String, String>> aggregatedData) {
+    public void append(File file, List<Map<String, String>> aggregatedData) {
         if (aggregatedData.isEmpty()) {
             return;
         } else if (!file.exists() || file.length() == 0) {

@@ -3,6 +3,7 @@ package com.parfyonoff.webscraper.agregation.service;
 import com.parfyonoff.webscraper.agregation.AggregatedData;
 import com.parfyonoff.webscraper.agregation.AggregationException;
 import com.parfyonoff.webscraper.apiclient.APIClient;
+import com.parfyonoff.webscraper.writer.CsvWriter;
 
 import java.time.Instant;
 import java.util.*;
@@ -12,7 +13,7 @@ public class Service {
 
     public Service(List<String> apiClientsNames, List<APIClient<?>> apiClients) {
         if (apiClientsNames == null || apiClientsNames.isEmpty()) {
-            throw new AggregationException("API Clients list is null or empty");
+            throw new AggregationException("API Clients names list is null or empty");
         } else if (apiClients == null || apiClients.isEmpty()) {
             throw new AggregationException("API Clients list is null or empty");
         } else if (apiClients.size() != apiClientsNames.size()) {
@@ -25,20 +26,22 @@ public class Service {
     }
 
     public AggregatedData fetchAsAggregatedType(String apiClientName) {
-        if (apiClientName == null || apiClientName.isEmpty()) {
-            throw new AggregationException("API Clients list is null or empty");
+        if (apiClientName == null || apiClientName.isBlank()) {
+            throw new AggregationException("API Clients name is null or empty");
         }
 
         APIClient<?> apiClient = apiClientsMap.get(apiClientName);
         if (apiClient == null) {
-            throw new AggregationException("API Client not found");
+            throw new AggregationException("API Client not found: " + apiClientName);
         }
 
         return new AggregatedData(UUID.randomUUID(), apiClientName,  Instant.now().toString(), apiClient.fetchToDTO());
     }
 
     public List<Map<String, String>> fetchAsMapList(String apiClientName) {
-        if (!apiClientsMap.containsKey(apiClientName)) {
+        if (apiClientName == null || apiClientName.isBlank()) {
+            throw new AggregationException("API Client name is null or empty");
+        } else if (!apiClientsMap.containsKey(apiClientName)) {
             throw new AggregationException("API Client " + apiClientName + " not found");
         }
 

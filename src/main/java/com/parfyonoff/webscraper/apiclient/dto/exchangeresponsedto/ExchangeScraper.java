@@ -8,6 +8,8 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.*;
 
+import static com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeScraper.ExColumns.*;
+
 public class ExchangeScraper implements APIClient<ExchangeResponseDto> {
     private final URI uri;
     public final String basicURI = "https://api.stackexchange.com/2.3/questions?order=desc&sort=activity&tagged=python&site=stackoverflow&pagesize=10";
@@ -64,29 +66,65 @@ public class ExchangeScraper implements APIClient<ExchangeResponseDto> {
             }
 
             if (tags.length() > 0) {
-                item.put("tags", tags.substring(0, tags.length() - 1));
+                item.put(TAGS.getColumnName(), tags.substring(0, tags.length() - 1));
             } else {
-                item.put("tags", "[]");
+                item.put(TAGS.getColumnName(), "[]");
             }
 
             if (curDtoItem.owner() != null) {
-                item.put("owner_account_id", String.valueOf(curDtoItem.owner().accountId()));
-                item.put("owner_reputation", String.valueOf(curDtoItem.owner().reputation()));
-                item.put("owner_link", curDtoItem.owner().link());
+                item.put(OWNER_ID.getColumnName(), String.valueOf(curDtoItem.owner().accountId()));
+                item.put(OWNER_REPUTATION.getColumnName(), String.valueOf(curDtoItem.owner().reputation()));
+                item.put(OWNER_LINK.getColumnName(), curDtoItem.owner().link());
             } else {
-                item.put("owner_account_id", "");
-                item.put("owner_reputation", "");
-                item.put("owner_link", "");
+                item.put(OWNER_ID.getColumnName(), "");
+                item.put(OWNER_REPUTATION.getColumnName(), "");
+                item.put(OWNER_LINK.getColumnName(), "");
             }
 
-            item.put("view_count", curDtoItem.viewCount().toString());
-            item.put("score",  curDtoItem.score().toString());
-            item.put("answer_count", curDtoItem.answerCount().toString());
-            item.put("last_activity_date", curDtoItem.lastActivityDate().toString());
-            item.put("link", curDtoItem.link());
-            item.put("title", curDtoItem.title());
+            item.put(VIEW_COUNT.getColumnName(), curDtoItem.viewCount().toString());
+            item.put(SCORE.getColumnName(),  curDtoItem.score().toString());
+            item.put(ANSWER_COUNT.getColumnName(), curDtoItem.answerCount().toString());
+            item.put(LAST_ACTIVITY_DATE.getColumnName(), curDtoItem.lastActivityDate().toString());
+            item.put(LINK.getColumnName(), curDtoItem.link());
+            item.put(TITLE.getColumnName(), curDtoItem.title());
         }
 
         return result;
+    }
+
+    @Override
+    public List<String> getFlatColumns() {
+        return Arrays.stream(values())
+                .map(ExchangeScraper.ExColumns::getColumnName)
+                .toList();
+    }
+
+    public enum ExColumns {
+        TAGS("ex_tags"),
+        OWNER_ID("ex_owner_account_id"),
+        OWNER_REPUTATION("ex_owner_reputation"),
+        OWNER_LINK("ex_owner_link"),
+        VIEW_COUNT("ex_view_count"),
+        SCORE("ex_score"),
+        ANSWER_COUNT("ex_answer_count"),
+        LAST_ACTIVITY_DATE("ex_last_activity_date"),
+        LINK("ex_link"),
+        TITLE("ex_title");
+
+        private final String columnName;
+
+        ExColumns(String columnName) {
+            this.columnName = columnName;
+        }
+
+        public String getColumnName() {
+            return columnName;
+        }
+
+        public static List<String> asList() {
+            return Arrays.stream(values())
+                    .map(ExchangeScraper.ExColumns::getColumnName)
+                    .toList();
+        }
     }
 }

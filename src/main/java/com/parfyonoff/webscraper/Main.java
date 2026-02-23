@@ -8,6 +8,7 @@ import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeRespo
 import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeScraper;
 import com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto.HackerNewsScraper;
 import com.parfyonoff.webscraper.apiclient.dto.headhunterdto.HeadHunterScraper;
+import com.parfyonoff.webscraper.cli.CliRunner;
 import com.parfyonoff.webscraper.writer.JsonWriter;
 
 import java.io.File;
@@ -16,6 +17,10 @@ import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+        CliRunner cliRunner = new CliRunner();
+        cliRunner.run(List.of("hn", "ex", "hh"), "/Users/mac/OOP_Labs/WebScraper/src/test.json", true, "all");
+
+        /*
         Fetcher fetcher = new Fetcher(new ObjectMapper(), HttpClient.newHttpClient());
         ExchangeScraper exchangeScraper = new ExchangeScraper(fetcher);
 
@@ -26,7 +31,7 @@ public class Main {
         Service service = new Service(List.of("HackerNews", "Exchange", "HeadHunter"), apiClientsList);
 
         JsonWriter.append(new File("/Users/mac/OOP_Labs/WebScraper/src/test.json"), service.fetchAsAggregatedType("HeadHunter"));
-                /*
+
         HeadHunterScraper headHunterScraper = new HeadHunterScraper(fetcher);
 
         HeadHunterResponseDto headHunterResponseDto = headHunterScraper.fetchToDTO();
