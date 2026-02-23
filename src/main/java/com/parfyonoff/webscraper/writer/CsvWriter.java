@@ -1,0 +1,68 @@
+package com.parfyonoff.webscraper.writer;
+
+import com.fasterxml.jackson.core.exc.StreamWriteException;
+import com.fasterxml.jackson.databind.DatabindException;
+import com.fasterxml.jackson.databind.MappingIterator;
+import com.fasterxml.jackson.dataformat.csv.CsvMapper;
+import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+
+public class CsvWriter {
+    private final static CsvMapper csvMapper = new CsvMapper();
+
+    public static void write(File file, List<Map<String, String>> aggregatedData) {
+        try {
+            if (aggregatedData.isEmpty()) {
+                return;
+            }
+
+            CsvSchema.Builder builder = CsvSchema.builder();
+            for (String columnName : aggregatedData.getFirst().keySet()) {
+                builder.addColumn(columnName);
+            }
+
+            CsvSchema csvSchema = builder.setUseHeader(true).build();
+            csvMapper.writer(csvSchema).writeValue(file, aggregatedData);
+        } catch (StreamWriteException exc) {
+            throw new WriterException("Can't write data to csv file: " + exc.getMessage());
+        } catch (DatabindException exc) {
+            throw new WriterException("Can't bind data: " + exc.getMessage());
+        } catch (IOException exc) {
+            throw new WriterException("Unexpected IO exception while writing to csv file: " + exc.getMessage());
+        }
+    }
+
+    public static void append(File file, List<Map<String, String>> aggregatedData) {
+        if (aggregatedData.isEmpty()) {
+            return;
+        } else if (!file.exists() || file.length() == 0) {
+            write(file, aggregatedData);
+            return;
+        }
+
+        CsvSchema schema = CsvSchema.emptySchema().withHeader();
+
+        try (MappingIterator<Map<String, String>> iterator =
+                     csvMapper
+                             .readerFor(Map.class)
+                             .with(schema)
+                             .readValues(file)) {
+
+            List<Map<String, String>> fullData = iterator.readAll();
+            fullData.addAll(aggregatedData);
+
+            write(file, fullData);
+
+        } catch (StreamWriteException exc) {
+            throw new WriterException("Can't append data to csv file: " + exc.getMessage());
+        } catch (DatabindException exc) {
+            throw new WriterException("Can't bind data: " + exc.getMessage());
+        } catch (IOException exc) {
+            throw new WriterException("Unexpected IO exception while appending to csv file: " + exc.getMessage());
+        }
+    }
+}
