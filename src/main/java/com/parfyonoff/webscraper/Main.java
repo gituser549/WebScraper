@@ -1,24 +1,14 @@
 package com.parfyonoff.webscraper;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.parfyonoff.webscraper.agregation.service.Service;
-import com.parfyonoff.webscraper.apiclient.APIClient;
-import com.parfyonoff.webscraper.apiclient.Fetcher;
-import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeResponseDto;
-import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeScraper;
-import com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto.HackerNewsScraper;
-import com.parfyonoff.webscraper.apiclient.dto.headhunterdto.HeadHunterScraper;
-import com.parfyonoff.webscraper.cli.CliException;
+import com.parfyonoff.webscraper.applicationrunner.ApplicationRunner;
 import com.parfyonoff.webscraper.cli.CliRunner;
-import com.parfyonoff.webscraper.writer.JsonWriter;
 
-import java.io.File;
-import java.net.http.HttpClient;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
+
 
         if (args.length >= 4) {
             String fileName;
@@ -37,8 +27,11 @@ public class Main {
 
             fileName = args[args.length - 1];
 
+            ApplicationRunner applicationRunner = new ApplicationRunner();
+            applicationRunner.run(apiNames, fileName, true, "all");
+        } else {
             CliRunner cliRunner = new CliRunner();
-            cliRunner.run(apiNames, fileName, true, "all");
+            cliRunner.start();
         }
         //CliRunner cliRunner = new CliRunner();
         //cliRunner.run(List.of("hn", "ex", "hh"), "/Users/mac/OOP_Labs/WebScraper/src/test.json", true, "all");

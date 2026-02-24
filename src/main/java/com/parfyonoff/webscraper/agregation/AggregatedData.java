@@ -15,6 +15,7 @@ public record AggregatedData (
     @JsonProperty("agg_timestamp")
     String agg_timestamp,
 
+    @JsonProperty("data")
     Object data
 ) {}
 

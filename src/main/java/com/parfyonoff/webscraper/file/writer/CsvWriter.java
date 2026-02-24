@@ -1,10 +1,11 @@
-package com.parfyonoff.webscraper.writer;
+package com.parfyonoff.webscraper.file.writer;
 
 import com.fasterxml.jackson.core.exc.StreamWriteException;
 import com.fasterxml.jackson.databind.DatabindException;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
+import com.parfyonoff.webscraper.file.FileException;
 
 import java.io.File;
 import java.io.IOException;
@@ -17,7 +18,7 @@ public class CsvWriter {
 
     public CsvWriter(List<String> columnsNames) {
         if (columnsNames == null || columnsNames.isEmpty()) {
-            throw new WriterException("columns cannot be null or empty");
+            throw new FileException("columns cannot be null or empty");
         }
 
         CsvSchema.Builder builder = CsvSchema.builder();
@@ -36,11 +37,11 @@ public class CsvWriter {
 
             csvMapper.writer(csvSchema).writeValue(file, aggregatedData);
         } catch (StreamWriteException exc) {
-            throw new WriterException("Can't write data to csv file: " + exc.getMessage());
+            throw new FileException("Can't write data to csv file: " + exc.getMessage());
         } catch (DatabindException exc) {
-            throw new WriterException("Can't bind data: " + exc.getMessage());
+            throw new FileException("Can't bind data: " + exc.getMessage());
         } catch (IOException exc) {
-            throw new WriterException("Unexpected IO exception while writing to csv file: " + exc.getMessage());
+            throw new FileException("Unexpected IO exception while writing to csv file: " + exc.getMessage());
         }
     }
 
@@ -66,11 +67,11 @@ public class CsvWriter {
             write(file, fullData);
 
         } catch (StreamWriteException exc) {
-            throw new WriterException("Can't append data to csv file: " + exc.getMessage());
+            throw new FileException("Can't append data to csv file: " + exc.getMessage());
         } catch (DatabindException exc) {
-            throw new WriterException("Can't bind data: " + exc.getMessage());
+            throw new FileException("Can't bind data: " + exc.getMessage());
         } catch (IOException exc) {
-            throw new WriterException("Unexpected IO exception while appending to csv file: " + exc.getMessage());
+            throw new FileException("Unexpected IO exception while appending to csv file: " + exc.getMessage());
         }
     }
 }
