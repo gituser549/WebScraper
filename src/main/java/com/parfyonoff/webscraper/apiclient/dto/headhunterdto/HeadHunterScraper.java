@@ -121,12 +121,6 @@ public class HeadHunterScraper implements APIClient<HeadHunterResponseDto> {
         public String getColumnName() {
             return columnName;
         }
-
-        public static List<String> asList() {
-            return Arrays.stream(values())
-                    .map(HhColumns::getColumnName)
-                    .toList();
-        }
     }
 
 }

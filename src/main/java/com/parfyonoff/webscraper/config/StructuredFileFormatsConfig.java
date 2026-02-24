@@ -17,14 +17,6 @@ public enum StructuredFileFormatsConfig {
          fileInfo = new StructuredFileInfo(fileFormatExtension, structuredFilesWritersFactory, printerFactory);
     }
 
-    public StructuredWritersFactory getStructuredFilesWritersFactory() {
-        return fileInfo.writersFactory;
-    }
-
-    public static List<StructuredWritersFactory> getStructuredFilesWritersFactories() {
-        return Arrays.stream(StructuredFileFormatsConfig.values()).map(StructuredFileFormatsConfig::getStructuredFilesWritersFactory).toList();
-    }
-
     public StructuredFileInfo getFileInfo() {
         return fileInfo;
     }

@@ -18,10 +18,6 @@ public enum FlatFileFormatsConfig {
         flatFileInfo = new FlatFileInfo(fileFormatExtension, flatWritersFactory, printerFactory);
     }
 
-    public FlatWritersFactory getFlatFilesWritersFactory() {
-        return flatFileInfo.flatWriterFactory;
-    }
-
     public FlatFileInfo getFlatFileInfo() {
         return flatFileInfo;
     }
@@ -29,7 +25,6 @@ public enum FlatFileFormatsConfig {
     public static List<FlatFileInfo> getFlatFileInfos() {
         return Arrays.stream(values()).map(FlatFileFormatsConfig::getFlatFileInfo).toList();
     }
-
 
     public record FlatFileInfo (
         String fileFormatExtension,

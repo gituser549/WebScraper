@@ -4,13 +4,13 @@ import com.parfyonoff.webscraper.applicationrunner.ApplicationRunner;
 import com.parfyonoff.webscraper.cli.CliRunner;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
         if (args.length >= 4) {
             String fileName;
-            List<String> apiNames = new ArrayList<>();
 
             if (!args[0].equals("--api")) {
                 System.out.println("Invalid key when --api needed");
@@ -19,9 +19,7 @@ public class Main {
                 System.out.println("Invalid key when --file needed");
             }
 
-            for (int i = 1; i < args.length - 2; i++) {
-                apiNames.add(args[i]);
-            }
+            List<String> apiNames = new ArrayList<>(Arrays.asList(args).subList(1, args.length - 2));
 
             fileName = args[args.length - 1];
 
