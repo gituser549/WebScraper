@@ -11,9 +11,9 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public enum APIClientsConfig {
-    EX("ex", fetcher -> new ExchangeScraper(fetcher)),
-    HN("hn", fetcher -> new HackerNewsScraper(fetcher)),
-    HH("hh", fetcher -> new HeadHunterScraper(fetcher)),;
+    EX("ex", ExchangeScraper::new),
+    HN("hn", HackerNewsScraper::new),
+    HH("hh", HeadHunterScraper::new),;
 
     private final String apiClientName;
     private final APIClientFactory factory;

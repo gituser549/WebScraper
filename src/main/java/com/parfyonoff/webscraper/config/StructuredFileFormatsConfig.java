@@ -9,7 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public enum StructuredFileFormatsConfig {
-    JSON("json", () -> new JsonWriter(), () -> new JsonPrinter());
+    JSON("json", JsonWriter::new, JsonPrinter::new);
 
     private final StructuredFileInfo fileInfo;
 

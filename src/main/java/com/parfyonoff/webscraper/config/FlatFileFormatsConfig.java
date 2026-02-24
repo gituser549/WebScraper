@@ -10,7 +10,7 @@ import java.util.List;
 
 
 public enum FlatFileFormatsConfig {
-    CSV("csv", columnsNames -> new CsvWriter(columnsNames), () -> new CsvPrinter());
+    CSV("csv", CsvWriter::new, CsvPrinter::new);
 
     private final FlatFileInfo flatFileInfo;
 
