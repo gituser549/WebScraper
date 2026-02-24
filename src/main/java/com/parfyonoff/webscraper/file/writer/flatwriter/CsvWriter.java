@@ -35,6 +35,14 @@ public class CsvWriter implements FlatWriter {
                 return;
             }
 
+            if (!file.exists()) {
+                boolean created = file.createNewFile();
+
+                if (!created) {
+                    throw new WriterException("Cannot create file " + file.getAbsolutePath());
+                }
+            }
+
             csvMapper.writer(csvSchema).writeValue(file, aggregatedData);
         } catch (StreamWriteException exc) {
             throw new WriterException("Can't write data to csv file: " + exc.getMessage());

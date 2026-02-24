@@ -60,11 +60,7 @@ public class ApplicationRunner {
 
         File file = new File(fileName);
 
-        if (!file.exists()) {
-            throw new ApplicationRunnerException("file does not exist");
-        }
-
-        String fileExtension = file.getName().substring(file.getName().lastIndexOf('.') + 1);
+        String fileExtension = fileName.substring(file.getName().lastIndexOf('.') + 1);
 
         FlatWriter flatWriter;
         StructuredWriter structuredWriter;
