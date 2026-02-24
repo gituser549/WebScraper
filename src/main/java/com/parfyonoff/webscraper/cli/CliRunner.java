@@ -2,13 +2,11 @@ package com.parfyonoff.webscraper.cli;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.parfyonoff.webscraper.config.AggregationFieldsConfig;
 import com.parfyonoff.webscraper.agregation.service.Service;
 import com.parfyonoff.webscraper.apiclient.APIClient;
 import com.parfyonoff.webscraper.apiclient.Fetcher;
-import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeItemsDto;
-import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeScraper;
-import com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto.HackerNewsScraper;
-import com.parfyonoff.webscraper.apiclient.dto.headhunterdto.HeadHunterScraper;
+import com.parfyonoff.webscraper.config.APIClientsConfig;
 import com.parfyonoff.webscraper.writer.CsvWriter;
 import com.parfyonoff.webscraper.writer.JsonWriter;
 
@@ -20,7 +18,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Scanner;
 
 public class CliRunner {
     private final ObjectMapper objectMapper;
@@ -37,10 +34,10 @@ public class CliRunner {
 
         this.fetcher = new Fetcher(objectMapper, httpClient);
 
-        apiClientsNames = List.of("ex", "hn", "hh");
-        apiClients = List.of(new ExchangeScraper(fetcher), new HackerNewsScraper(fetcher), new HeadHunterScraper(fetcher));
+        apiClientsNames = APIClientsConfig.getApiClientsNames();
+        apiClients = APIClientsConfig.getApiClients(fetcher);
 
-        List<String> columnsNames = new ArrayList<>(List.of("agg_id", "agg_source", "agg_timestamp"));
+        List<String> columnsNames = new ArrayList<>(AggregationFieldsConfig.getAggregationFieldsNames());
 
         apiClients.forEach(client -> columnsNames.addAll(client.getFlatColumns()));
         this.csvWriter = new CsvWriter(columnsNames);
@@ -92,25 +89,23 @@ public class CliRunner {
         if (file.getName().endsWith(".json")) {
             try {
                 JsonNode root;
-                switch (choiceToPrint) {
-                    case "all":
-                        root = objectMapper.readTree(file);
-                        for (JsonNode node : root) {
+                if (choiceToPrint == null || choiceToPrint.isEmpty()) {
+                    throw new CliException("Invalid choice: " + choiceToPrint);
+                } else if (choiceToPrint.equals("all")) {
+                    root = objectMapper.readTree(file);
+                    for (JsonNode node : root) {
+                        System.out.println(node.toPrettyString());
+                    }
+                } else if (APIClientsConfig.getApiClientsNames().contains(choiceToPrint)) {
+                    root = objectMapper.readTree(file);
+
+                    for (JsonNode node : root) {
+                        if (node.path(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName()).asText().equals(choiceToPrint)) {
                             System.out.println(node.toPrettyString());
                         }
-                        break;
-                    case "ex":
-                    case "hn":
-                    case "hh":
-                        root = objectMapper.readTree(file);
-                        for (JsonNode node : root) {
-                            if (node.path("source").asText().equals(choiceToPrint)) {
-                                System.out.println(node.toPrettyString());
-                            }
-                        }
-                        break;
-                    default:
-                        throw new CliException("Invalid choice: " + choiceToPrint);
+                    }
+                } else {
+                    throw new CliException("Invalid choice: " + choiceToPrint);
                 }
             } catch (IOException exc) {
                 throw new CliException("Reading file after writing exception: " + file.getName());
@@ -143,6 +138,5 @@ public class CliRunner {
         }
 
     }
-
 
 }

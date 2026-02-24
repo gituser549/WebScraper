@@ -2,8 +2,8 @@ package com.parfyonoff.webscraper.agregation.service;
 
 import com.parfyonoff.webscraper.agregation.AggregatedData;
 import com.parfyonoff.webscraper.agregation.AggregationException;
+import com.parfyonoff.webscraper.config.AggregationFieldsConfig;
 import com.parfyonoff.webscraper.apiclient.APIClient;
-import com.parfyonoff.webscraper.writer.CsvWriter;
 
 import java.time.Instant;
 import java.util.*;
@@ -51,9 +51,9 @@ public class Service {
         String timestamp = Instant.now().toString();
         for (Map<String, String> map : forCSVData) {
             Map<String, String> aggregatedDataItem = new LinkedHashMap<>();
-            aggregatedDataItem.put("agg_id", UUID.randomUUID().toString());
-            aggregatedDataItem.put("agg_source", apiClientName);
-            aggregatedDataItem.put("agg_timestamp", timestamp);
+            aggregatedDataItem.put(AggregationFieldsConfig.AGG_ID.getAggregationFieldName(), UUID.randomUUID().toString());
+            aggregatedDataItem.put(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName(), apiClientName);
+            aggregatedDataItem.put(AggregationFieldsConfig.AGG_TIMESTAMP.getAggregationFieldName(), timestamp);
             aggregatedDataItem.putAll(map);
             aggregatedData.add(aggregatedDataItem);
         }

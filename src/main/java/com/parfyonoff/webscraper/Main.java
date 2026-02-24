@@ -8,17 +8,40 @@ import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeRespo
 import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeScraper;
 import com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto.HackerNewsScraper;
 import com.parfyonoff.webscraper.apiclient.dto.headhunterdto.HeadHunterScraper;
+import com.parfyonoff.webscraper.cli.CliException;
 import com.parfyonoff.webscraper.cli.CliRunner;
 import com.parfyonoff.webscraper.writer.JsonWriter;
 
 import java.io.File;
 import java.net.http.HttpClient;
+import java.util.ArrayList;
 import java.util.List;
 
 public class Main {
     public static void main(String[] args) {
-        CliRunner cliRunner = new CliRunner();
-        cliRunner.run(List.of("hn", "ex", "hh"), "/Users/mac/OOP_Labs/WebScraper/src/test.json", true, "all");
+
+        if (args.length >= 4) {
+            String fileName;
+            List<String> apiNames = new ArrayList<>();
+
+            if (!args[0].equals("--api")) {
+                System.out.println("Invalid key when --api needed");
+                return;
+            } else if (!args[args.length - 2].equals("--file")) {
+                System.out.println("Invalid key when --file needed");
+            }
+
+            for (int i = 1; i < args.length - 2; i++) {
+                apiNames.add(args[i]);
+            }
+
+            fileName = args[args.length - 1];
+
+            CliRunner cliRunner = new CliRunner();
+            cliRunner.run(apiNames, fileName, true, "all");
+        }
+        //CliRunner cliRunner = new CliRunner();
+        //cliRunner.run(List.of("hn", "ex", "hh"), "/Users/mac/OOP_Labs/WebScraper/src/test.json", true, "all");
 
         /*
         Fetcher fetcher = new Fetcher(new ObjectMapper(), HttpClient.newHttpClient());
