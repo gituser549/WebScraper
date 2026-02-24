@@ -14,7 +14,7 @@ import java.util.Map;
 
 public class CsvWriter implements FlatWriter {
     private final static CsvMapper csvMapper = new CsvMapper();
-    private CsvSchema csvSchema;
+    private final CsvSchema csvSchema;
 
     public CsvWriter(List<String> columnsNames) {
         if (columnsNames == null || columnsNames.isEmpty()) {

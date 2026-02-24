@@ -8,8 +8,8 @@ import java.util.List;
 import java.util.Scanner;
 
 public class CliRunner {
-    private Scanner scanner;
-    private ApplicationRunner applicationRunner;
+    private final Scanner scanner;
+    private final ApplicationRunner applicationRunner;
 
     public CliRunner() {
         scanner = new Scanner(System.in);

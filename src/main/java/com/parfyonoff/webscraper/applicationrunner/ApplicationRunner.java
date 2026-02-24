@@ -20,9 +20,6 @@ import java.util.List;
 import java.util.Map;
 
 public class ApplicationRunner {
-    private final ObjectMapper objectMapper;
-    private final HttpClient httpClient;
-    private final Fetcher fetcher;
     private final Service service;
     List<String> apiClientsNames;
     List<APIClient<?>> apiClients;
@@ -31,13 +28,8 @@ public class ApplicationRunner {
     Map<String, Printer> printers;
 
     public ApplicationRunner() {
-        this.objectMapper = new ObjectMapper();
-        this.httpClient = HttpClient.newHttpClient();
-
-        this.fetcher = new Fetcher(objectMapper, httpClient);
-
         apiClientsNames = APIClientsConfig.getApiClientsNames();
-        apiClients = APIClientsConfig.getApiClients(fetcher);
+        apiClients = APIClientsConfig.getApiClients(new Fetcher(new ObjectMapper(), HttpClient.newHttpClient()));
 
         List<String> columnsNames = new ArrayList<>(AggregationFieldsConfig.getAggregationFieldsNames());
 

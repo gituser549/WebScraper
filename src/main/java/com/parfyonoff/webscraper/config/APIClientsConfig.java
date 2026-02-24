@@ -27,10 +27,6 @@ public enum APIClientsConfig {
         return apiClientName;
     }
 
-    public APIClientFactory getFactory() {
-        return factory;
-    }
-
     public static List<String> getApiClientsNames() {
         return Arrays.stream(values()).map(APIClientsConfig::getApiClientName).toList();
     }

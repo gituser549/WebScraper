@@ -15,7 +15,6 @@ public class HeadHunterScraper implements APIClient<HeadHunterResponseDto> {
     public final String basicURI = "https://api.hh.ru/vacancies?text=java&area=1&page=1&only_with_salary=true&salary=150000";
     public final String formatURI = "https://api.hh.ru/vacancies?text=%s&area=%s&page=%s&only_with_salary=true&salary=%s";
     private final Fetcher fetcher;
-    private List<String> columns;
 
     public HeadHunterScraper(Fetcher fetcher) {
         if (fetcher == null) {

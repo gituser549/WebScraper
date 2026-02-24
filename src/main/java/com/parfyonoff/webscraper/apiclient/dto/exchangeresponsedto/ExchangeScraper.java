@@ -120,11 +120,5 @@ public class ExchangeScraper implements APIClient<ExchangeResponseDto> {
         public String getColumnName() {
             return columnName;
         }
-
-        public static List<String> asList() {
-            return Arrays.stream(values())
-                    .map(ExchangeScraper.ExColumns::getColumnName)
-                    .toList();
-        }
     }
 }

@@ -124,11 +124,5 @@ public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
         public String getColumnName() {
             return columnName;
         }
-
-        public static List<String> asList() {
-            return Arrays.stream(values())
-                    .map(HackerNewsScraper.HnColumns::getColumnName)
-                    .toList();
-        }
     }
 }
