@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto;
+package com.parfyonoff.webscraper.apiclient.dto.hackernews;
 
 import com.parfyonoff.webscraper.apiclient.APIClient;
 import com.parfyonoff.webscraper.apiclient.APIClientException;
@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.*;
 
-import static com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto.HackerNewsScraper.HnColumns.*;
+import static com.parfyonoff.webscraper.apiclient.dto.hackernews.HackerNewsScraper.HnColumns.*;
 
 public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
     private final URI uri;

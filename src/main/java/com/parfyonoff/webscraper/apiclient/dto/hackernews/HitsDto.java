@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto;
+package com.parfyonoff.webscraper.apiclient.dto.hackernews;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

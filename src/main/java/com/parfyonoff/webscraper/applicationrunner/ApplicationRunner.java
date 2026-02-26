@@ -1,7 +1,7 @@
 package com.parfyonoff.webscraper.applicationrunner;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.parfyonoff.webscraper.agregation.service.Service;
+import com.parfyonoff.webscraper.aggregation.service.Service;
 import com.parfyonoff.webscraper.apiclient.APIClient;
 import com.parfyonoff.webscraper.apiclient.Fetcher;
 import com.parfyonoff.webscraper.config.APIClientsConfig;
@@ -54,8 +54,12 @@ public class ApplicationRunner {
 
 
     public void run(List<String> apiNamesList, String fileName, Boolean rewrite, String choiceToPrint) {
-        if (fileName == null || fileName.isBlank()) {
+        if (apiNamesList == null || apiNamesList.isEmpty()) {
+            throw new ApplicationRunnerException("Api names list is empty or even null");
+        } else if (fileName == null || fileName.isBlank()) {
             throw new ApplicationRunnerException("fileName is null or blank");
+        } else if (choiceToPrint == null || choiceToPrint.isBlank()) {
+            throw new ApplicationRunnerException("choiceToPrint is null or blank");
         }
 
         File file = new File(fileName);
@@ -68,30 +72,32 @@ public class ApplicationRunner {
         if (flatWriters.containsKey(fileExtension)) {
             flatWriter = flatWriters.get(fileExtension);
 
+            if (rewrite) {
+                flatWriter.write(file, service.fetchAsMapList(apiNamesList.getFirst()));
+                apiNamesList =  apiNamesList.subList(1, apiNamesList.size());
+            }
+
             for (String apiName : apiNamesList) {
-                if (rewrite) {
-                    flatWriter.write(file, service.fetchAsMapList(apiName));
-                    rewrite = false;
-                } else {
-                    flatWriter.append(file, service.fetchAsMapList(apiName));
-                }
+                flatWriter.append(file, service.fetchAsMapList(apiName));
             }
         } else if (structuredWriters.containsKey(fileExtension)) {
             structuredWriter = structuredWriters.get(fileExtension);
 
-            for (String apiName : apiNamesList) {
-                if (rewrite) {
-                    structuredWriter.write(file, service.fetchAsAggregatedType(apiName));
-                    rewrite = false;
-                } else {
-                    structuredWriter.append(file, service.fetchAsAggregatedType(apiName));
-                }
+            if (rewrite) {
+                structuredWriter.write(file, service.fetchAsAggregatedType(apiNamesList.getFirst()));
+                apiNamesList =  apiNamesList.subList(1, apiNamesList.size());
             }
 
+            for (String apiName : apiNamesList) {
+                structuredWriter.append(file, service.fetchAsAggregatedType(apiName));
+            }
         } else {
             throw new ApplicationRunnerException("unknown fileExtension");
         }
 
+        if (!printers.containsKey(fileExtension)) {
+            throw new ApplicationRunnerException("printer not found for extension " + fileExtension);
+        }
         printers.get(fileExtension).printFile(file, choiceToPrint);
     }
 

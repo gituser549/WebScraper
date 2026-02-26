@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto;
+package com.parfyonoff.webscraper.apiclient.dto.stackexchange;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;

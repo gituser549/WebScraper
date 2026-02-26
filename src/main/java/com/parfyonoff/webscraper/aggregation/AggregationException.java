@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.agregation;
+package com.parfyonoff.webscraper.aggregation;
 
 public class AggregationException extends RuntimeException {
     public AggregationException(String message) {

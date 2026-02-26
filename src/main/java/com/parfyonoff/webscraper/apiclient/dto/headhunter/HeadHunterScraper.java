@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.apiclient.dto.headhunterdto;
+package com.parfyonoff.webscraper.apiclient.dto.headhunter;
 
 import com.parfyonoff.webscraper.apiclient.APIClient;
 import com.parfyonoff.webscraper.apiclient.APIClientException;
@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.*;
 
-import static com.parfyonoff.webscraper.apiclient.dto.headhunterdto.HeadHunterScraper.HhColumns.*;
+import static com.parfyonoff.webscraper.apiclient.dto.headhunter.HeadHunterScraper.HhColumns.*;
 
 public class HeadHunterScraper implements APIClient<HeadHunterResponseDto> {
     private final URI uri;

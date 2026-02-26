@@ -17,6 +17,7 @@ public class Main {
                 return;
             } else if (!args[args.length - 2].equals("--file")) {
                 System.out.println("Invalid key when --file needed");
+                return;
             }
 
             List<String> apiNames = new ArrayList<>(Arrays.asList(args).subList(1, args.length - 2));

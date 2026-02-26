@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.agregation;
+package com.parfyonoff.webscraper.aggregation;
 
 
 import com.fasterxml.jackson.annotation.JsonProperty;

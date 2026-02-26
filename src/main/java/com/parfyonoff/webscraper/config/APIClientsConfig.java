@@ -2,9 +2,9 @@ package com.parfyonoff.webscraper.config;
 
 import com.parfyonoff.webscraper.apiclient.APIClient;
 import com.parfyonoff.webscraper.apiclient.Fetcher;
-import com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeScraper;
-import com.parfyonoff.webscraper.apiclient.dto.hackernewsresponsedto.HackerNewsScraper;
-import com.parfyonoff.webscraper.apiclient.dto.headhunterdto.HeadHunterScraper;
+import com.parfyonoff.webscraper.apiclient.dto.stackexchange.ExchangeScraper;
+import com.parfyonoff.webscraper.apiclient.dto.hackernews.HackerNewsScraper;
+import com.parfyonoff.webscraper.apiclient.dto.headhunter.HeadHunterScraper;
 
 import java.util.Arrays;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.parfyonoff.webscraper.file.writer.structuredwriter;
 
-import com.parfyonoff.webscraper.agregation.AggregatedData;
+import com.parfyonoff.webscraper.aggregation.AggregatedData;
 
 import java.io.File;
 

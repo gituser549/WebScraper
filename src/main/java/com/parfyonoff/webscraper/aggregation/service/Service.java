@@ -1,7 +1,7 @@
-package com.parfyonoff.webscraper.agregation.service;
+package com.parfyonoff.webscraper.aggregation.service;
 
-import com.parfyonoff.webscraper.agregation.AggregatedData;
-import com.parfyonoff.webscraper.agregation.AggregationException;
+import com.parfyonoff.webscraper.aggregation.AggregatedData;
+import com.parfyonoff.webscraper.aggregation.AggregationException;
 import com.parfyonoff.webscraper.config.AggregationFieldsConfig;
 import com.parfyonoff.webscraper.apiclient.APIClient;
 

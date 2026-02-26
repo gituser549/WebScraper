@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto;
+package com.parfyonoff.webscraper.apiclient.dto.stackexchange;
 
 import com.parfyonoff.webscraper.apiclient.APIClient;
 import com.parfyonoff.webscraper.apiclient.APIClientException;
@@ -8,7 +8,7 @@ import java.net.URI;
 import java.net.http.HttpRequest;
 import java.util.*;
 
-import static com.parfyonoff.webscraper.apiclient.dto.exchangeresponsedto.ExchangeScraper.ExColumns.*;
+import static com.parfyonoff.webscraper.apiclient.dto.stackexchange.ExchangeScraper.ExColumns.*;
 
 public class ExchangeScraper implements APIClient<ExchangeResponseDto> {
     private final URI uri;
