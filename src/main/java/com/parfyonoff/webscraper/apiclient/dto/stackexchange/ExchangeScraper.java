@@ -12,8 +12,7 @@ import static com.parfyonoff.webscraper.apiclient.dto.stackexchange.ExchangeScra
 
 public class ExchangeScraper implements APIClient<ExchangeResponseDto> {
     private final URI uri;
-    public final String basicURI = "https://api.stackexchange.com/2.3/questions?order=desc&sort=activity&tagged=python&site=stackoverflow&pagesize=10";
-    public final String formatURI = "https://api.stackexchange.com/2.3/questions?order=%s&sort=%s&tagged=%s&site=%s&pagesize=%s";
+    public final static String basicURI = "https://api.stackexchange.com/2.3/questions?order=desc&sort=activity&tagged=python&site=stackoverflow&pagesize=10";
     private final Fetcher fetcher;
 
     public ExchangeScraper(Fetcher fetcher) {
@@ -23,24 +22,6 @@ public class ExchangeScraper implements APIClient<ExchangeResponseDto> {
 
         this.fetcher = fetcher;
         uri = URI.create(basicURI);
-    }
-
-    public ExchangeScraper(Fetcher fetcher, List<String> params) {
-        if (fetcher == null) {
-            throw new APIClientException("fetcher cannot be null");
-        } else if (params == null || params.size() != 5) {
-            throw new APIClientException("EXCHANGE SCRAPER: Invalid number of parameters");
-        }
-
-        this.fetcher = fetcher;
-
-        try {
-            uri = URI.create(String.format(formatURI, params.toArray()));
-        } catch (IllegalFormatException exc) {
-            throw new APIClientException("EXCHANGE SCRAPER: Invalid format parameters: " + exc.getMessage());
-        } catch (IllegalArgumentException exc) {
-            throw new APIClientException("EXCHANGE SCRAPER: Invalid URI: " + exc.getMessage());
-        }
     }
 
     @Override
@@ -59,13 +40,13 @@ public class ExchangeScraper implements APIClient<ExchangeResponseDto> {
             Map<String, String> item = new LinkedHashMap<>();
             result.add(item);
 
-            StringBuffer tags = new StringBuffer();
+            StringBuilder tags = new StringBuilder();
             for (String tag : curDtoItem.tags()) {
                 tags.append(tag);
                 tags.append(",");
             }
 
-            if (tags.length() > 0) {
+            if (!tags.isEmpty()) {
                 item.put(TAGS.getColumnName(), tags.substring(0, tags.length() - 1));
             } else {
                 item.put(TAGS.getColumnName(), "[]");

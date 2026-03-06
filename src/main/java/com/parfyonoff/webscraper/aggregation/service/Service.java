@@ -21,7 +21,9 @@ public class Service {
         }
 
         for (int i = 0; i < apiClientsNames.size(); i++) {
-            apiClientsMap.put(apiClientsNames.get(i), apiClients.get(i));
+            if (!apiClientsMap.containsKey(apiClientsNames.get(i))) {
+                apiClientsMap.put(apiClientsNames.get(i), apiClients.get(i));
+            }
         }
     }
 
@@ -35,7 +37,7 @@ public class Service {
             throw new AggregationException("API Client not found: " + apiClientName);
         }
 
-        return new AggregatedData(UUID.randomUUID(), apiClientName,  Instant.now().toString(), apiClient.fetchToDTO());
+        return new AggregatedData(UUID.randomUUID(), apiClientName, Instant.now().toString(), apiClient.fetchToDTO());
     }
 
     public List<Map<String, String>> fetchAsMapList(String apiClientName) {
@@ -45,11 +47,11 @@ public class Service {
             throw new AggregationException("API Client " + apiClientName + " not found");
         }
 
-        List<Map<String, String>> forCSVData = apiClientsMap.get(apiClientName).fetchToMap();
+        List<Map<String, String>> forFlatData = apiClientsMap.get(apiClientName).fetchToMap();
         List<Map<String, String>> aggregatedData = new ArrayList<>();
 
         String timestamp = Instant.now().toString();
-        for (Map<String, String> map : forCSVData) {
+        for (Map<String, String> map : forFlatData) {
             Map<String, String> aggregatedDataItem = new LinkedHashMap<>();
             aggregatedDataItem.put(AggregationFieldsConfig.AGG_ID.getAggregationFieldName(), UUID.randomUUID().toString());
             aggregatedDataItem.put(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName(), apiClientName);

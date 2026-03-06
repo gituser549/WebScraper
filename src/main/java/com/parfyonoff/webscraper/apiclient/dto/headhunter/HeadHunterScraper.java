@@ -12,8 +12,7 @@ import static com.parfyonoff.webscraper.apiclient.dto.headhunter.HeadHunterScrap
 
 public class HeadHunterScraper implements APIClient<HeadHunterResponseDto> {
     private final URI uri;
-    public final String basicURI = "https://api.hh.ru/vacancies?text=java&area=1&page=1&only_with_salary=true&salary=150000";
-    public final String formatURI = "https://api.hh.ru/vacancies?text=%s&area=%s&page=%s&only_with_salary=true&salary=%s";
+    public final static String basicURI = "https://api.hh.ru/vacancies?text=java&area=1&page=1&only_with_salary=true&salary=150000";
     private final Fetcher fetcher;
 
     public HeadHunterScraper(Fetcher fetcher) {
@@ -23,24 +22,6 @@ public class HeadHunterScraper implements APIClient<HeadHunterResponseDto> {
 
         this.fetcher = fetcher;
         uri = URI.create(basicURI);
-    }
-
-    public HeadHunterScraper(Fetcher fetcher, List<String> params) {
-        if (fetcher == null) {
-            throw new APIClientException("fetcher cannot be null");
-        } else if (params == null || params.size() != 4) {
-            throw new APIClientException("EXCHANGE SCRAPER: Invalid number of parameters");
-        }
-
-        this.fetcher = fetcher;
-
-        try {
-            uri = URI.create(String.format(formatURI, params.toArray()));
-        } catch (IllegalFormatException exc) {
-            throw new APIClientException("EXCHANGE SCRAPER: Invalid format parameters: " + exc.getMessage());
-        } catch (IllegalArgumentException exc) {
-            throw new APIClientException("EXCHANGE SCRAPER: Invalid URI: " + exc.getMessage());
-        }
     }
 
     @Override

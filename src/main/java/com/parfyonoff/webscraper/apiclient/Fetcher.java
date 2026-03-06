@@ -15,9 +15,9 @@ public class Fetcher {
 
     public Fetcher(ObjectMapper objectMapper, HttpClient httpClient) {
         if (objectMapper == null) {
-            throw new APIClientException("objectMapper cannot be null");
+            throw new APIClientException("Fetcher: objectMapper cannot be null");
         } else if (httpClient == null) {
-            throw new APIClientException("httpClient cannot be null");
+            throw new APIClientException("Fetcher: httpClient cannot be null");
         }
 
         this.objectMapper = objectMapper;
@@ -30,13 +30,13 @@ public class Fetcher {
             httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException exc) {
             Thread.currentThread().interrupt();
-            throw new APIClientException("EXCHANGE SCRAPER: Interrupted while waiting for request from Exchange API: " + exc.getMessage());
+            throw new APIClientException("Fetcher: Interrupted while waiting for request from Exchange API: " + exc.getMessage());
         } catch (IOException exc) {
-            throw new APIClientException("EXCHANGE SCRAPER: IOException while waiting for request from Exchange API: " + exc.getMessage());
+            throw new APIClientException("Fetcher: IOException while waiting for request from Exchange API: " + exc.getMessage());
         }
 
         if (httpResponse.statusCode() < 200 || httpResponse.statusCode() > 299) {
-            throw new APIClientException("EXCHANGE SCRAPER: Failed ExchangeResponseDtoScrapping : HTTP error code : " + httpResponse.statusCode());
+            throw new APIClientException("Fetcher: Failed ExchangeResponseDtoScrapping : HTTP code : " + httpResponse.statusCode());
         }
 
         T data;
@@ -44,9 +44,9 @@ public class Fetcher {
         try {
             data = objectMapper.readValue(httpResponse.body(), dtoClass);
         } catch (JsonMappingException exc) {
-            throw new APIClientException("EXCHANGE SCRAPER: JSON mapping error: " + exc.getMessage());
+            throw new APIClientException("Fetcher: JSON mapping error: " + exc.getMessage());
         } catch (JsonProcessingException exc) {
-            throw new APIClientException("EXCHANGE SCRAPER: JSON processing error: " + exc.getMessage());
+            throw new APIClientException("Fetcher: JSON processing error: " + exc.getMessage());
         }
 
         return data;

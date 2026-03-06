@@ -1,6 +1,7 @@
 package com.parfyonoff.webscraper.cli;
 
-import com.parfyonoff.webscraper.applicationrunner.ApplicationRunner;
+import com.parfyonoff.webscraper.applicationcomposition.ApplicationCompositor;
+import com.parfyonoff.webscraper.applicationexecution.ExecutionConfig;
 import com.parfyonoff.webscraper.config.APIClientsConfig;
 
 import java.util.Arrays;
@@ -9,11 +10,9 @@ import java.util.Scanner;
 
 public class CliRunner {
     private final Scanner scanner;
-    private final ApplicationRunner applicationRunner;
 
     public CliRunner() {
         scanner = new Scanner(System.in);
-        applicationRunner = new ApplicationRunner();
     }
 
     public void start() {
@@ -26,7 +25,8 @@ public class CliRunner {
         Boolean rewrite = scanner.nextLine().equals("yes");
         System.out.println("Please choose do you want to print to console all info in file (all), or for exact api (allowed: " + APIClientsConfig.getApiClientsNames() + "):");
         String choiceToPrint = scanner.nextLine();
-        applicationRunner.run(apiNamesToScrap, fileName, rewrite, choiceToPrint);
+
+        new ApplicationCompositor().build().run(new ExecutionConfig(apiNamesToScrap, fileName, rewrite, choiceToPrint));
     }
 
 }

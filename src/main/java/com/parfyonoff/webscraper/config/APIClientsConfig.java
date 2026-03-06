@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 public enum APIClientsConfig {
     EX("ex", ExchangeScraper::new),
     HN("hn", HackerNewsScraper::new),
-    HH("hh", HeadHunterScraper::new),;
+    HH("hh", HeadHunterScraper::new);
 
     private final String apiClientName;
     private final APIClientFactory factory;

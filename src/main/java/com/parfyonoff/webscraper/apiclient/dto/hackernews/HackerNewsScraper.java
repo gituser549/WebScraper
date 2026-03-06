@@ -12,8 +12,7 @@ import static com.parfyonoff.webscraper.apiclient.dto.hackernews.HackerNewsScrap
 
 public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
     private final URI uri;
-    public final String basicURI = "https://hn.algolia.com/api/v1/search?query=devops&tags=story&hitsPerPage=20&page=0";
-    public final String formatURI = "https://hn.algolia.com/api/v1/search?query=%s&tags=%s&hitsPerPage=%s&page=%s";
+    public final static String basicURI = "https://hn.algolia.com/api/v1/search?query=devops&tags=story&hitsPerPage=20&page=0";
     private final Fetcher fetcher;
 
     public HackerNewsScraper(Fetcher fetcher) {
@@ -23,25 +22,6 @@ public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
 
         this.fetcher = fetcher;
         uri = URI.create(basicURI);
-    }
-
-    public HackerNewsScraper(Fetcher fetcher, List<String> params) {
-        if (fetcher == null) {
-            throw new APIClientException("fetcher cannot be null");
-        }
-        if (params == null || params.size() != 4) {
-            throw new APIClientException("HACKER NEWS SCRAPER: Invalid number of parameters");
-        }
-
-        this.fetcher = fetcher;
-
-        try {
-            uri = URI.create(String.format(formatURI, params.toArray()));
-        } catch (IllegalFormatException exc) {
-            throw new APIClientException("HACKER NEWS SCRAPER: Invalid format parameters: " + exc.getMessage());
-        } catch (IllegalArgumentException exc) {
-            throw new APIClientException("HACKER NEWS SCRAPER: Invalid URI: " + exc.getMessage());
-        }
     }
 
     @Override
@@ -60,13 +40,13 @@ public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
             Map<String, String> item = new LinkedHashMap<>();
             result.add(item);
 
-            StringBuffer tags = new StringBuffer();
+            StringBuilder tags = new StringBuilder();
             for (String tag : curHitsDto.tags()) {
                 tags.append(tag);
                 tags.append(",");
             }
 
-            if (tags.length() > 0) {
+            if (!tags.isEmpty()) {
                 item.put(TAGS.getColumnName(), tags.substring(0, tags.length() - 1));
             } else {
                 item.put(TAGS.getColumnName(), "[]");
@@ -74,13 +54,13 @@ public class HackerNewsScraper implements APIClient<HackerNewsResponseDto> {
 
             item.put(AUTHOR.getColumnName(), curHitsDto.author());
 
-            StringBuffer children = new StringBuffer();
+            StringBuilder children = new StringBuilder();
             for (Integer child : curHitsDto.children()) {
                 children.append(child.toString());
                 children.append(",");
             }
 
-            if (children.length() > 0) {
+            if (!children.isEmpty()) {
                 item.put(CHILDREN.getColumnName(), children.substring(0, children.length() - 1));
             } else {
                 item.put(CHILDREN.getColumnName(), "[]");
