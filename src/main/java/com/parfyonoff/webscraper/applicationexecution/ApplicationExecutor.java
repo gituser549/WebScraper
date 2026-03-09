@@ -50,23 +50,21 @@ public class ApplicationExecutor {
         if (flatWriters.containsKey(fileExtension)) {
             flatWriter = flatWriters.get(fileExtension);
 
-            job = (apiName) -> {
+            job = (apiName) ->
                 threadManager.execute(() -> {
                     List<Map<String, String>> fetchedData = service.fetchAsMapList(apiName);
                     flatWriter.append(file, fetchedData);
                 }
-                );
-            };
+            );
         } else if (structuredWriters.containsKey(fileExtension)) {
             structuredWriter = structuredWriters.get(fileExtension);
 
-            job = (apiName) -> {
+            job = (apiName) ->
                 threadManager.execute(() -> {
                     AggregatedData fetchedData = service.fetchAsAggregatedType(apiName);
                     structuredWriter.append(file, fetchedData);
                 }
-                );
-            };
+            );
         } else {
             throw new ApplicationExecutorException("unknown fileExtension");
         }
