@@ -1,6 +1,7 @@
 package com.parfyonoff.webscraper.file.printer;
 
 import com.parfyonoff.webscraper.config.AggregationFieldsConfig;
+import com.parfyonoff.webscraper.file.FileAccessRegistry;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -21,30 +22,34 @@ public class CsvPrinter implements Printer {
             throw new PrinterException("file must end with extension .csv");
         }
 
-        try (BufferedReader reader = Files.newBufferedReader(Path.of(file.getAbsolutePath()))) {
-            String header = reader.readLine();
-            System.out.println(header);
+        Object lock = FileAccessRegistry.getFileLockFromRegistry(file);
 
-            String line;
-            if (choiceToPrint.equals("all")) {
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
-            } else {
-                int apiNameIndex = Arrays.stream(header.split(",")).toList().indexOf(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName());
+        synchronized (lock) {
+            try (BufferedReader reader = Files.newBufferedReader(Path.of(file.getAbsolutePath()))) {
+                String header = reader.readLine();
+                System.out.println(header);
 
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.split(",");
-
-                    String source = parts[apiNameIndex];
-
-                    if (source.equals(choiceToPrint)) {
+                String line;
+                if (choiceToPrint.equals("all")) {
+                    while ((line = reader.readLine()) != null) {
                         System.out.println(line);
                     }
+                } else {
+                    int apiNameIndex = Arrays.stream(header.split(",")).toList().indexOf(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName());
+
+                    while ((line = reader.readLine()) != null) {
+                        String[] parts = line.split(",");
+
+                        String source = parts[apiNameIndex];
+
+                        if (source.equals(choiceToPrint)) {
+                            System.out.println(line);
+                        }
+                    }
                 }
+            } catch (IOException exc) {
+                throw new PrinterException("Reading file after writing exception: " + file.getName());
             }
-        } catch (IOException exc) {
-            throw new PrinterException("Reading file after writing exception: " + file.getName());
         }
     }
 }

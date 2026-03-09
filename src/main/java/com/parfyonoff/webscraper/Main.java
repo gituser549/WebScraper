@@ -17,23 +17,32 @@ public class Main {
     public static void main(String[] args) {
         try {
             if (args.length >= 4) {
-                String fileName;
-
                 if (!args[0].equals("--api")) {
                     System.out.println("Invalid key when --api needed");
                     return;
-                } else if (!args[args.length - 2].equals("--file")) {
+                } else if (!args[args.length - 6].equals("--file")) {
                     System.out.println("Invalid key when --file needed");
+                    return;
+                } else if (!args[args.length - 4].equals("--n")) {
+                    System.out.println("Invalid key when --n needed");
+                    return;
+                } else if (!args[args.length - 2].equals("--t")) {
+                    System.out.println("Invalid key when --t needed");
                     return;
                 }
 
-                List<String> apiNames = new ArrayList<>(Arrays.asList(args).subList(1, args.length - 2));
+                List<String> apiNames = new ArrayList<>(Arrays.asList(args).subList(1, args.length - 6));
 
-                fileName = args[args.length - 1];
+                String fileName = args[args.length - 6];
 
                 new ApplicationCompositor().
-                        build().
-                        run(new ExecutionConfig(apiNames, fileName, true, "all"));
+                        build(new ExecutionConfig(
+                                apiNames,
+                                fileName,
+                                true,
+                                "all"
+                                )
+                        ).run();
             } else {
                 CliRunner cliRunner = new CliRunner();
                 cliRunner.start();

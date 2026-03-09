@@ -35,6 +35,10 @@ public enum APIClientsConfig {
         return Arrays.stream(values()).map(val -> val.factory.create(fetcher)).collect(Collectors.toList());
     }
 
+    public static Integer getNumOfApiClients() {
+        return getApiClientsNames().size();
+    }
+
     @FunctionalInterface
     public interface APIClientFactory {
         APIClient<?> create(Fetcher fetcher);
