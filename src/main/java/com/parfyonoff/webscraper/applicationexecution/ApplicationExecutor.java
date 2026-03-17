@@ -1,9 +1,13 @@
 package com.parfyonoff.webscraper.applicationexecution;
 
 import com.parfyonoff.webscraper.aggregation.AggregatedData;
+import com.parfyonoff.webscraper.aggregation.AggregationException;
 import com.parfyonoff.webscraper.aggregation.service.Service;
+import com.parfyonoff.webscraper.apiclient.APIClientException;
 import com.parfyonoff.webscraper.file.FileCleaner;
+import com.parfyonoff.webscraper.file.FileException;
 import com.parfyonoff.webscraper.file.printer.Printer;
+import com.parfyonoff.webscraper.file.writer.WriterException;
 import com.parfyonoff.webscraper.file.writer.flatwriter.FlatWriter;
 import com.parfyonoff.webscraper.file.writer.structuredwriter.StructuredWriter;
 import com.parfyonoff.webscraper.threadmanagement.ThreadManager;
@@ -51,31 +55,47 @@ public class ApplicationExecutor {
             flatWriter = flatWriters.get(fileExtension);
 
             job = (apiName) ->
-                threadManager.execute(() -> {
-                    List<Map<String, String>> fetchedData = service.fetchAsMapList(apiName);
-                    flatWriter.append(file, fetchedData);
-                }
+                threadManager.execute(
+                    () -> {
+                        try {
+                            List<Map<String, String>> fetchedData = service.fetchAsMapList(apiName);
+                            flatWriter.append(file, fetchedData);
+                        } catch (AggregationException | APIClientException | FileException | WriterException exc) {
+                            System.out.println(exc.getMessage());
+                            throw exc;
+                        } catch (RuntimeException exc) {
+                            System.out.println("Unexpected runtime exception gotten: " + exc.getMessage());
+                            throw exc;
+                        }
+                    }
             );
         } else if (structuredWriters.containsKey(fileExtension)) {
             structuredWriter = structuredWriters.get(fileExtension);
 
             job = (apiName) ->
-                threadManager.execute(() -> {
-                    AggregatedData fetchedData = service.fetchAsAggregatedType(apiName);
-                    structuredWriter.append(file, fetchedData);
-                }
-            );
+                threadManager.execute(
+                    () -> {
+                        try {
+                            AggregatedData fetchedData = service.fetchAsAggregatedType(apiName);
+                            structuredWriter.append(file, fetchedData);
+                        } catch (AggregationException | APIClientException | FileException | WriterException exc) {
+                            System.out.println(exc.getMessage());
+                            throw exc;
+                        } catch (RuntimeException exc) {
+                            System.out.println("Unexpected runtime exception gotten: " + exc.getMessage());
+                            throw exc;
+                        }
+                    }
+                );
         } else {
-            throw new ApplicationExecutorException("unknown fileExtension");
+            throw new ApplicationExecutorException("unknown fileExtension: " + fileExtension);
         }
 
         if (rewrite) {
             FileCleaner.clean(file);
         }
 
-        for (String apiName : apiNamesList) {
-            job.run(apiName);
-        }
+        apiNamesList.forEach(job::run);
     }
 
     public void stop() {
@@ -100,10 +120,7 @@ public class ApplicationExecutor {
     }
 
     @FunctionalInterface
-    private interface SchedulingExecutionJob {
+    public interface SchedulingExecutionJob {
         void run(String apiName);
     }
 }
-
-
-

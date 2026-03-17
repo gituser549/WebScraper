@@ -12,6 +12,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class CsvWriter implements FlatWriter {
     private final static CsvMapper csvMapper = new CsvMapper();
@@ -35,32 +36,32 @@ public class CsvWriter implements FlatWriter {
             return;
         }
 
-        Object lock = FileAccessRegistry.getFileLockFromRegistry(file);
-        synchronized (lock) {
-            if (!file.exists()) {
+        ReentrantLock fileLock = FileAccessRegistry.getFileLockFromRegistry(file);
+        fileLock.lock();
+        if (!file.exists()) {
 
-                boolean created;
-                try {
-                    created = file.createNewFile();
-                } catch (IOException exc) {
-                    throw new WriterException("Unexpected IO exception while creating csv file: " + exc.getMessage());
-                }
-
-                if (!created) {
-                    throw new WriterException("Cannot create file " + file.getAbsolutePath());
-                }
+            boolean created;
+            try {
+                created = file.createNewFile();
+            } catch (IOException exc) {
+                throw new WriterException("Unexpected IO exception while creating csv file: " + exc.getMessage());
             }
 
-            try {
-                csvMapper.writer(csvSchema).writeValue(file, aggregatedData);
-            } catch (StreamWriteException exc) {
-                throw new WriterException("Can't write data to csv file: " + exc.getMessage());
-            } catch (DatabindException exc) {
-                throw new WriterException("Can't bind data: " + exc.getMessage());
-            } catch (IOException exc) {
-                throw new WriterException("Unexpected IO exception while writing to csv file: " + exc.getMessage());
+            if (!created) {
+                throw new WriterException("Cannot create file " + file.getAbsolutePath());
             }
         }
+
+        try {
+            csvMapper.writer(csvSchema).writeValue(file, aggregatedData);
+        } catch (StreamWriteException exc) {
+            throw new WriterException("Can't write data to csv file: " + exc.getMessage());
+        } catch (DatabindException exc) {
+            throw new WriterException("Can't bind data: " + exc.getMessage());
+        } catch (IOException exc) {
+            throw new WriterException("Unexpected IO exception while writing to csv file: " + exc.getMessage());
+        }
+        fileLock.unlock();
     }
 
     public void append(File file, List<Map<String, String>> aggregatedData) {
@@ -73,27 +74,26 @@ public class CsvWriter implements FlatWriter {
 
         CsvSchema schema = CsvSchema.emptySchema().withHeader();
 
-        Object lock = FileAccessRegistry.getFileLockFromRegistry(file);
+        ReentrantLock fileLock = FileAccessRegistry.getFileLockFromRegistry(file);
 
-        synchronized (lock) {
-            try (MappingIterator<Map<String, String>> iterator =
-                         csvMapper
-                                 .readerFor(Map.class)
-                                 .with(schema)
-                                 .readValues(file)) {
+        fileLock.lock();
+        try (MappingIterator<Map<String, String>> iterator =
+                     csvMapper
+                             .readerFor(Map.class)
+                             .with(schema)
+                             .readValues(file)) {
 
-                List<Map<String, String>> fullData = iterator.readAll();
-                fullData.addAll(aggregatedData);
+            List<Map<String, String>> fullData = iterator.readAll();
+            fullData.addAll(aggregatedData);
 
-                write(file, fullData);
-
-            } catch (StreamWriteException exc) {
-                throw new WriterException("Can't append data to csv file: " + exc.getMessage());
-            } catch (DatabindException exc) {
-                throw new WriterException("Can't bind data: " + exc.getMessage());
-            } catch (IOException exc) {
-                throw new WriterException("Unexpected IO exception while appending to csv file: " + exc.getMessage());
-            }
+            write(file, fullData);
+        } catch (StreamWriteException exc) {
+            throw new WriterException("Can't append data to csv file: " + exc.getMessage());
+        } catch (DatabindException exc) {
+            throw new WriterException("Can't bind data: " + exc.getMessage());
+        } catch (IOException exc) {
+            throw new WriterException("Unexpected IO exception while appending to csv file: " + exc.getMessage());
         }
+        fileLock.unlock();
     }
 }

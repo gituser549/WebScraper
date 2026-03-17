@@ -1,6 +1,6 @@
 package com.parfyonoff.webscraper.cli;
 
-import com.parfyonoff.webscraper.applicationcomposition.ApplicationCompositor;
+import com.parfyonoff.webscraper.applicationbuilding.ApplicationBuilder;
 import com.parfyonoff.webscraper.applicationexecution.ApplicationExecutor;
 import com.parfyonoff.webscraper.applicationexecution.ExecutionConfig;
 import com.parfyonoff.webscraper.config.APIClientsConfig;
@@ -32,16 +32,25 @@ public class CliRunner {
         Integer maxTasks = scanner.nextInt();
         System.out.println("Please enter the interval for api polling:");
         Integer interval = scanner.nextInt();
-        System.out.println("To stop polling api and get the results you should text \"stop\" and press <Enter>");
 
-        ApplicationExecutor applicationExecutor = new ApplicationCompositor().build(
+        ApplicationExecutor applicationExecutor = new ApplicationBuilder().build(
                 new ExecutionConfig(
                         apiNamesToScrap, fileName, rewrite, choiceToPrint
                 ),
                 new MultiThreadingConfig(maxTasks, interval)
         );
 
+        runAppAndAwaitForStop(applicationExecutor);
+    }
+
+    public void runAppAndAwaitForStop(ApplicationExecutor applicationExecutor) {
+        if (applicationExecutor == null) {
+            throw new CliException("Application Executor could not be null.");
+        }
+
         applicationExecutor.run();
+
+        System.out.println("To stop polling api and get the results you should text \"stop\" and press <Enter>");
 
         while (true) {
             String command = scanner.nextLine();
@@ -52,5 +61,4 @@ public class CliRunner {
 
         applicationExecutor.stop();
     }
-
 }

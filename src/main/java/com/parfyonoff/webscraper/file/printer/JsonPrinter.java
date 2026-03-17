@@ -8,6 +8,7 @@ import com.parfyonoff.webscraper.file.FileAccessRegistry;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class JsonPrinter implements Printer {
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -22,33 +23,32 @@ public class JsonPrinter implements Printer {
             throw new PrinterException("file must end with extension .json");
         }
 
-        Object lock = FileAccessRegistry.getFileLockFromRegistry(file);
+        ReentrantLock fileLock = FileAccessRegistry.getFileLockFromRegistry(file);
 
-        synchronized (lock) {
-            try {
-                JsonNode root;
-                if (choiceToPrint == null || choiceToPrint.isEmpty()) {
-                    throw new PrinterException("Invalid choice: " + choiceToPrint);
-                } else if (choiceToPrint.equals("all")) {
-                    root = objectMapper.readTree(file);
-                    for (JsonNode node : root) {
+        fileLock.lock();
+        try {
+            JsonNode root;
+            if (choiceToPrint == null || choiceToPrint.isEmpty()) {
+                throw new PrinterException("Invalid choice: " + choiceToPrint);
+            } else if (choiceToPrint.equals("all")) {
+                root = objectMapper.readTree(file);
+                for (JsonNode node : root) {
+                    System.out.println(node.toPrettyString());
+                }
+            } else if (APIClientsConfig.getApiClientsNames().contains(choiceToPrint)) {
+                root = objectMapper.readTree(file);
+
+                for (JsonNode node : root) {
+                    if (node.path(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName()).asText().equals(choiceToPrint)) {
                         System.out.println(node.toPrettyString());
                     }
-                } else if (APIClientsConfig.getApiClientsNames().contains(choiceToPrint)) {
-                    root = objectMapper.readTree(file);
-
-                    for (JsonNode node : root) {
-                        if (node.path(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName()).asText().equals(choiceToPrint)) {
-                            System.out.println(node.toPrettyString());
-                        }
-                    }
-                } else {
-                    throw new PrinterException("Invalid choice: " + choiceToPrint);
                 }
-            } catch (IOException exc) {
-                throw new PrinterException("Reading file after writing exception: " + file.getName());
+            } else {
+                throw new PrinterException("Invalid choice: " + choiceToPrint);
             }
+        } catch (IOException exc) {
+            throw new PrinterException("Reading file after writing exception: " + file.getName());
         }
-
+        fileLock.unlock();
     }
 }

@@ -1,4 +1,4 @@
-package com.parfyonoff.webscraper.applicationcomposition;
+package com.parfyonoff.webscraper.applicationbuilding;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.parfyonoff.webscraper.aggregation.service.Service;
@@ -23,13 +23,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ApplicationCompositor {
+public class ApplicationBuilder {
     private final Service service;
     private final Map<String, FlatWriter> flatWriters;
     private final Map<String, StructuredWriter>  structuredWriters;
     private final Map<String, Printer> printers;
 
-    public ApplicationCompositor() {
+    public ApplicationBuilder() {
         List<String> apiClientsNames = APIClientsConfig.getApiClientsNames();
         List<APIClient<?>> apiClients = APIClientsConfig.getApiClients(new Fetcher(new ObjectMapper(), HttpClient.newHttpClient()));
 
@@ -54,18 +54,10 @@ public class ApplicationCompositor {
         this.service = new Service(apiClientsNames, apiClients);
     }
 
-
     public ApplicationExecutor build(ExecutionConfig executionConfig, MultiThreadingConfig multiThreadingConfig) {
         return new ApplicationExecutor(new DependenciesConfig(flatWriters, structuredWriters, service, printers),
                 executionConfig,
                 new ThreadManager(multiThreadingConfig)
             );
-    }
-
-    public ApplicationExecutor build(ExecutionConfig executionConfig) {
-        return new ApplicationExecutor(new DependenciesConfig(flatWriters, structuredWriters, service, printers),
-                executionConfig,
-                new ThreadManager()
-        );
     }
 }

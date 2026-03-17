@@ -2,43 +2,40 @@ package com.parfyonoff.webscraper.threadmanagement;
 
 import com.parfyonoff.webscraper.config.APIClientsConfig;
 
-import java.util.*;
 import java.util.concurrent.*;
 
 public class ThreadManager {
-    private enum BasicConfig {
-        WAITING_LIMIT_SECONDS(20),
-        BASIC_TIME_TO_WAIT(3),
-        BASIC_NUM_OF_PARALLEL_TASKS(APIClientsConfig.getNumOfApiClients());
-
-        private final int amount;
-
-        BasicConfig(int amount) {
-            this.amount = amount;
-        }
-
-        public int getAmount() {
-            return amount;
-        }
-    }
-
+    private final static Integer BASIC_TIME_TO_WAIT = 10;
     private final MultiThreadingConfig multiThreadingConfig;
     private final ScheduledExecutorService scheduledExecutorService;
-    private final Deque<ScheduledFuture<?>> scheduledFuturesQueue;
+    private final ConcurrentLinkedDeque<ScheduledFuture<?>> scheduledFuturesQueue;
 
     public ThreadManager(MultiThreadingConfig multiThreadingConfig) {
         this.multiThreadingConfig = multiThreadingConfig;
-        this.scheduledExecutorService = new ScheduledThreadPoolExecutor(multiThreadingConfig.maxTasks());
-        this.scheduledFuturesQueue = new ArrayDeque<>();
-    }
 
-    public ThreadManager() {
-        this(new MultiThreadingConfig(BasicConfig.BASIC_NUM_OF_PARALLEL_TASKS.amount, BasicConfig.BASIC_TIME_TO_WAIT.amount));
+        if (multiThreadingConfig == null) {
+            throw new ThreadManagementException("MultiThreadingConfig is null");
+        } else if (multiThreadingConfig.maxTasks() == null || multiThreadingConfig.maxTasks() < 1) {
+            throw new ThreadManagementException("MultiThreadingConfig.maxTasks() is null or its value is less than 1");
+        } else if (multiThreadingConfig.interval() == null || multiThreadingConfig.interval() < 1) {
+            throw new ThreadManagementException("Interval is null or its value is less than 1");
+        } else if (multiThreadingConfig.maxTasks() > APIClientsConfig.getNumOfApiClients()) {
+            System.out.println("Warning! Making amount of parallel tasks larger than amount of api clients (>" + APIClientsConfig.getNumOfApiClients() + ") is miscellaneous");
+        }
+
+        this.scheduledExecutorService = new ScheduledThreadPoolExecutor(multiThreadingConfig.maxTasks());
+        this.scheduledFuturesQueue = new ConcurrentLinkedDeque<>();
     }
 
     public void execute(Runnable runnable) {
+        if (scheduledExecutorService.isShutdown()) {
+            throw new ThreadManagementException("Executor has been shutdown before current launching");
+        }
+
         if (multiThreadingConfig == null) {
             throw new ThreadManagementException("MultiThreadingConfig is null");
+        } else if (runnable == null) {
+            throw new ThreadManagementException("Runnable is null");
         }
 
         ScheduledFuture<?> scheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(
@@ -52,26 +49,24 @@ public class ThreadManager {
     }
 
     public void stop() {
-        while (!scheduledFuturesQueue.isEmpty()) {
-            ScheduledFuture<?> scheduledFuture = scheduledFuturesQueue.removeFirst();
-            scheduledFuture.cancel(true);
+        ScheduledFuture<?> scheduledFuture;
+        while ((scheduledFuture = scheduledFuturesQueue.pollFirst()) != null) {
+            scheduledFuture.cancel(false);
         }
 
         scheduledExecutorService.shutdown();
 
-        boolean awaitTerminationResult = false;
         try {
-            if (!scheduledExecutorService.awaitTermination(BasicConfig.BASIC_TIME_TO_WAIT.amount, TimeUnit.SECONDS)) {
+            if (!scheduledExecutorService.awaitTermination(BASIC_TIME_TO_WAIT, TimeUnit.SECONDS)) {
                 scheduledExecutorService.shutdownNow();
 
-                if (!scheduledExecutorService.awaitTermination(BasicConfig.BASIC_TIME_TO_WAIT.amount, TimeUnit.SECONDS)) {
+                if (!scheduledExecutorService.awaitTermination(BASIC_TIME_TO_WAIT, TimeUnit.SECONDS)) {
                     throw new ThreadManagementException("Timeout waiting for termination results reached");
                 }
             }
         } catch (InterruptedException e) {
-            System.out.println("Interrupted while waiting for scheduled futures " + e.getCause());
+            Thread.currentThread().interrupt();
+            System.out.println("Interrupted while waiting for scheduled futures " + e.getMessage() + " Cause: " + e.getCause());
         }
-
-
     }
 }
