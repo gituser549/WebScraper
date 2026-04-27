@@ -2,7 +2,7 @@ package com.parfyonoff.webscraper.file.printer;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.parfyonoff.webscraper.config.APIClientsConfig;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.parfyonoff.webscraper.config.AggregationFieldsConfig;
 import com.parfyonoff.webscraper.file.FileAccessRegistry;
 
@@ -16,6 +16,8 @@ public class JsonPrinter implements Printer {
     public void printFile(File file, String choiceToPrint) {
         if (!file.exists() || file.length() == 0) {
             throw new PrinterException("file does not exist or is empty");
+        } else if (choiceToPrint == null || choiceToPrint.isBlank()) {
+            throw new PrinterException("choiceToPrint is null or blank");
         }
 
         String fileName = file.getName();
@@ -27,28 +29,28 @@ public class JsonPrinter implements Printer {
 
         fileLock.lock();
         try {
-            JsonNode root;
-            if (choiceToPrint == null || choiceToPrint.isEmpty()) {
-                throw new PrinterException("Invalid choice: " + choiceToPrint);
-            } else if (choiceToPrint.equals("all")) {
-                root = objectMapper.readTree(file);
-                for (JsonNode node : root) {
-                    System.out.println(node.toPrettyString());
-                }
-            } else if (APIClientsConfig.getApiClientsNames().contains(choiceToPrint)) {
-                root = objectMapper.readTree(file);
+            try {
+                JsonNode root;
+                if (choiceToPrint.equals("all")) {
+                    root = objectMapper.readTree(file);
+                    System.out.println(root.toString());
+                } else {
+                    root = objectMapper.readTree(file);
 
-                for (JsonNode node : root) {
-                    if (node.path(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName()).asText().equals(choiceToPrint)) {
-                        System.out.println(node.toPrettyString());
+                    ArrayNode arrayNode = objectMapper.createArrayNode();
+                    for (JsonNode node : root) {
+                        if (node.path(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName()).asText().equals(choiceToPrint)) {
+                            arrayNode.add(node);
+                        }
                     }
+
+                    System.out.println(arrayNode.toPrettyString());
                 }
-            } else {
-                throw new PrinterException("Invalid choice: " + choiceToPrint);
+            } catch (IOException exc) {
+                throw new PrinterException("Reading file after writing exception: " + file.getName());
             }
-        } catch (IOException exc) {
-            throw new PrinterException("Reading file after writing exception: " + file.getName());
+        } finally {
+            fileLock.unlock();
         }
-        fileLock.unlock();
     }
 }

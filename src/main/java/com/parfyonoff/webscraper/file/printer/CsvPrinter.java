@@ -15,6 +15,8 @@ public class CsvPrinter implements Printer {
     public void printFile(File file, String choiceToPrint) {
         if (!file.exists() || file.length() == 0) {
             throw new PrinterException("file does not exist or is empty");
+        } else if (choiceToPrint == null || choiceToPrint.isBlank()) {
+            throw new PrinterException("choiceToPrint is null or blank");
         }
 
         String fileName = file.getName();
@@ -26,32 +28,35 @@ public class CsvPrinter implements Printer {
         ReentrantLock fileLock = FileAccessRegistry.getFileLockFromRegistry(file);
 
         fileLock.lock();
-        try (BufferedReader reader = Files.newBufferedReader(Path.of(file.getAbsolutePath()))) {
-            String header = reader.readLine();
-            System.out.println(header);
+        try {
+            try (BufferedReader reader = Files.newBufferedReader(Path.of(file.getAbsolutePath()))) {
+                String header = reader.readLine();
+                System.out.println(header);
 
-            String line;
-            if (choiceToPrint.equals("all")) {
-                while ((line = reader.readLine()) != null) {
-                    System.out.println(line);
-                }
-            } else {
-                int apiNameIndex = Arrays.stream(header.split(",")).toList().indexOf(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName());
-
-                while ((line = reader.readLine()) != null) {
-                    String[] parts = line.split(",");
-
-                    String source = parts[apiNameIndex];
-
-                    if (source.equals(choiceToPrint)) {
+                String line;
+                if (choiceToPrint.equals("all")) {
+                    while ((line = reader.readLine()) != null) {
                         System.out.println(line);
                     }
+                } else {
+                    int apiNameIndex = Arrays.stream(header.split(",")).toList().indexOf(AggregationFieldsConfig.AGG_SOURCE.getAggregationFieldName());
+
+                    while ((line = reader.readLine()) != null) {
+                        String[] parts = line.split(",");
+
+                        String source = parts[apiNameIndex];
+
+                        if (source.equals(choiceToPrint)) {
+                            System.out.println(line);
+                        }
+                    }
                 }
+            } catch (IOException exc) {
+                throw new PrinterException("Reading file after writing exception: " + file.getName());
             }
-        } catch (IOException exc) {
-            throw new PrinterException("Reading file after writing exception: " + file.getName());
+        } finally {
+            fileLock.unlock();
         }
-        fileLock.unlock();
     }
 }
 

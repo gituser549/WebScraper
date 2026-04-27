@@ -30,13 +30,13 @@ public class Fetcher {
             httpResponse = httpClient.send(httpRequest, HttpResponse.BodyHandlers.ofString());
         } catch (InterruptedException exc) {
             Thread.currentThread().interrupt();
-            throw new APIClientException("Fetcher: Interrupted while waiting for request from Exchange API: " + exc.getMessage());
+            throw new APIClientException("Fetcher: Interrupted while waiting for request from some API: " + exc.getMessage());
         } catch (IOException exc) {
-            throw new APIClientException("Fetcher: IOException while waiting for request from Exchange API: " + exc.getMessage());
+            throw new APIClientException("Fetcher: IOException while waiting for request from some API: " + exc.getMessage());
         }
 
         if (httpResponse.statusCode() < 200 || httpResponse.statusCode() > 299) {
-            throw new APIClientException("Fetcher: Failed ExchangeResponseDtoScrapping : HTTP code : " + httpResponse.statusCode());
+            throw new APIClientException("Fetcher: Failed scraping : HTTP code : " + httpResponse.statusCode());
         }
 
         T data;

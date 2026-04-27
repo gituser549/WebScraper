@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 
 public class ApplicationBuilder {
     private final Service service;
@@ -55,9 +56,62 @@ public class ApplicationBuilder {
     }
 
     public ApplicationExecutor build(ExecutionConfig executionConfig, MultiThreadingConfig multiThreadingConfig) {
+        // null checks
+        if (executionConfig == null) {
+            throw new ApplicationBuildingException("ExecutionConfig cannot be null");
+        }
+        if (multiThreadingConfig == null) {
+            throw new ApplicationBuildingException("MultiThreadingConfig cannot be null");
+        }
+        if (flatWriters == null) {
+            throw new ApplicationBuildingException("Flat writers cannot be null");
+        }
+        if (structuredWriters == null) {
+            throw new ApplicationBuildingException("Structured writers cannot be null");
+        }
+        if (service == null) {
+            throw new ApplicationBuildingException("Service cannot be null");
+        }
+        if (printers == null) {
+            throw new ApplicationBuildingException("Printers cannot be null");
+        }
+
+        // writers checks
+        if (flatWriters.isEmpty() || structuredWriters.isEmpty()) {
+            throw new ApplicationBuildingException("flatWriters or structuredWriters cannot be null or empty");
+        }
+
+        // printers checks
+        if (printers.isEmpty()) {
+            throw new ApplicationBuildingException("printers must be provided");
+        }
+
+        // multithreading checks
+        if (multiThreadingConfig.maxTasks() <= 0) {
+            throw new ApplicationBuildingException("maxTasks must be positive");
+        }
+        if (multiThreadingConfig.interval() == null) {
+            throw new ApplicationBuildingException("interval cannot be null");
+        }
+        if (multiThreadingConfig.interval() <= 0) {
+            throw new ApplicationBuildingException("interval must be positive");
+        }
+
+        // execution config checks
+        if (executionConfig.apiNamesList() == null) {
+            throw new ApplicationBuildingException("apiNamesList cannot be null");
+        }
+        if (executionConfig.fileName() == null) {
+            throw new ApplicationBuildingException("fileName cannot be null");
+        }
+        if (executionConfig.rewrite() == null) {
+            throw new ApplicationBuildingException("rewrite flag cannot be null");
+        }
+
+
         return new ApplicationExecutor(new DependenciesConfig(flatWriters, structuredWriters, service, printers),
                 executionConfig,
-                new ThreadManager(multiThreadingConfig)
+                new ThreadManager(new ScheduledThreadPoolExecutor(multiThreadingConfig.maxTasks()), multiThreadingConfig.interval())
             );
     }
 }

@@ -29,7 +29,7 @@ public class Service {
 
     public AggregatedData fetchAsAggregatedType(String apiClientName) {
         if (apiClientName == null || apiClientName.isBlank()) {
-            throw new AggregationException("API Clients name is null or empty");
+            throw new AggregationException("API Client name is null or empty");
         }
 
         APIClient<?> apiClient = apiClientsMap.get(apiClientName);

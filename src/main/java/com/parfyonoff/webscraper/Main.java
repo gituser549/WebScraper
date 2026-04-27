@@ -1,6 +1,7 @@
 package com.parfyonoff.webscraper;
 
 import com.parfyonoff.webscraper.applicationbuilding.ApplicationBuilder;
+import com.parfyonoff.webscraper.applicationbuilding.ApplicationBuildingException;
 import com.parfyonoff.webscraper.applicationexecution.ApplicationExecutor;
 import com.parfyonoff.webscraper.applicationexecution.ApplicationExecutorException;
 import com.parfyonoff.webscraper.applicationexecution.ExecutionConfig;
@@ -14,11 +15,12 @@ import com.parfyonoff.webscraper.threadmanagement.ThreadManagementException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         try {
-            CliRunner cliRunner = new CliRunner();
+            CliRunner cliRunner = new CliRunner(new Scanner(System.in), new ApplicationBuilder());
 
             if (args.length >= 4) {
                 if (!args[0].equals("--api")) {
@@ -61,6 +63,8 @@ public class Main {
             System.out.println("Thread management exception: " + exc.getMessage());
         } catch (CliException exc) {
             System.out.println("CLI exception: " + exc.getMessage());
+        } catch (ApplicationBuildingException exc) {
+            System.out.println("Application building exception: " + exc.getMessage());
         } catch (ApplicationExecutorException exc) {
             System.out.println("Application Executor exception: " + exc.getMessage());
         } catch (FileException exc) {

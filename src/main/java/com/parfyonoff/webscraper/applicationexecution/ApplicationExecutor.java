@@ -23,6 +23,14 @@ public class ApplicationExecutor {
     private final ThreadManager threadManager;
 
     public ApplicationExecutor(DependenciesConfig dependenciesConfig, ExecutionConfig executionConfig, ThreadManager threadManager) {
+        if (dependenciesConfig == null) {
+            throw new ApplicationExecutorException("DependenciesConfig cannot be null");
+        } else if (executionConfig == null) {
+            throw new ApplicationExecutorException("ExecutionConfig cannot be null");
+        } else if (threadManager == null) {
+            throw new ApplicationExecutorException("ThreadManager cannot be null");
+        }
+
         this.dependenciesConfig = dependenciesConfig;
         this.executionConfig = executionConfig;
         this.threadManager = threadManager;
@@ -33,15 +41,18 @@ public class ApplicationExecutor {
         Map<String, StructuredWriter> structuredWriters = dependenciesConfig.structuredWriters();
         Service service = dependenciesConfig.service();
 
+        if (executionConfig.apiNamesList() == null || executionConfig.apiNamesList().isEmpty()) {
+            throw new ApplicationExecutorException("Api names list is empty or even null");
+        }
+
         List<String> apiNamesList = new ArrayList<>(executionConfig.apiNamesList());
         String fileName = executionConfig.fileName();
-        Boolean rewrite = executionConfig.rewrite();
 
-        if (apiNamesList.isEmpty()) {
-            throw new ApplicationExecutorException("Api names list is empty or even null");
-        } else if (fileName == null || fileName.isBlank()) {
+        if (fileName == null || fileName.isBlank()) {
             throw new ApplicationExecutorException("fileName is null or blank");
         }
+
+        Boolean rewrite = executionConfig.rewrite();
 
         File file = new File(fileName);
 
@@ -54,39 +65,17 @@ public class ApplicationExecutor {
         if (flatWriters.containsKey(fileExtension)) {
             flatWriter = flatWriters.get(fileExtension);
 
-            job = (apiName) ->
-                threadManager.execute(
-                    () -> {
-                        try {
-                            List<Map<String, String>> fetchedData = service.fetchAsMapList(apiName);
-                            flatWriter.append(file, fetchedData);
-                        } catch (AggregationException | APIClientException | FileException | WriterException exc) {
-                            System.out.println(exc.getMessage());
-                            throw exc;
-                        } catch (RuntimeException exc) {
-                            System.out.println("Unexpected runtime exception gotten: " + exc.getMessage());
-                            throw exc;
-                        }
-                    }
-            );
+            job = (apiName) -> {
+                List<Map<String, String>> fetchedData = service.fetchAsMapList(apiName);
+                flatWriter.append(file, fetchedData);
+            };
         } else if (structuredWriters.containsKey(fileExtension)) {
             structuredWriter = structuredWriters.get(fileExtension);
 
-            job = (apiName) ->
-                threadManager.execute(
-                    () -> {
-                        try {
-                            AggregatedData fetchedData = service.fetchAsAggregatedType(apiName);
-                            structuredWriter.append(file, fetchedData);
-                        } catch (AggregationException | APIClientException | FileException | WriterException exc) {
-                            System.out.println(exc.getMessage());
-                            throw exc;
-                        } catch (RuntimeException exc) {
-                            System.out.println("Unexpected runtime exception gotten: " + exc.getMessage());
-                            throw exc;
-                        }
-                    }
-                );
+            job = (apiName) -> {
+                AggregatedData fetchedData = service.fetchAsAggregatedType(apiName);
+                structuredWriter.append(file, fetchedData);
+            };
         } else {
             throw new ApplicationExecutorException("unknown fileExtension: " + fileExtension);
         }
@@ -95,7 +84,7 @@ public class ApplicationExecutor {
             FileCleaner.clean(file);
         }
 
-        apiNamesList.forEach(job::run);
+        apiNamesList.forEach(apiName -> threadManager.execute(RunnableWrapper.of(job, apiName)));
     }
 
     public void stop() {
@@ -117,6 +106,22 @@ public class ApplicationExecutor {
 
         File file = new File(fileName);
         printers.get(fileExtension).printFile(file, choiceToPrint);
+    }
+
+    public static class RunnableWrapper {
+        public static Runnable of(SchedulingExecutionJob job, String apiName) {
+            return () -> {
+                try {
+                    job.run(apiName);
+                } catch (AggregationException | APIClientException | FileException | WriterException exc) {
+                    System.out.println(exc.getMessage());
+                    throw exc;
+                } catch (RuntimeException exc) {
+                    System.out.println("Unexpected runtime exception gotten: " + exc.getMessage());
+                    throw exc;
+                }
+            };
+        }
     }
 
     @FunctionalInterface

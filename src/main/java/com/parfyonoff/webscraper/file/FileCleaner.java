@@ -9,23 +9,26 @@ public class FileCleaner {
         ReentrantLock fileLock = FileAccessRegistry.getFileLockFromRegistry(file);
 
         fileLock.lock();
-        if (file.exists()) {
-            boolean deleteResult = file.delete();
-            if (!deleteResult) {
-                throw new FileException("Could not delete file: " + file.getAbsolutePath());
-            }
-        }
-
-        boolean createResult;
         try {
-            createResult = file.createNewFile();
-        } catch (IOException exc) {
-            throw new FileException("Could not create new file, got IOException " + file.getAbsolutePath());
-        }
+            if (file.exists()) {
+                boolean deleteResult = file.delete();
+                if (!deleteResult) {
+                    throw new FileException("Could not delete file: " + file.getAbsolutePath());
+                }
+            }
 
-        if (!createResult) {
-            throw new FileException("Could not create new file: " + file.getAbsolutePath());
+            boolean createResult;
+            try {
+                createResult = file.createNewFile();
+            } catch (IOException exc) {
+                throw new FileException("Could not create new file, got IOException " + file.getAbsolutePath());
+            }
+
+            if (!createResult) {
+                throw new FileException("Could not create new file: " + file.getAbsolutePath());
+            }
+        } finally {
+            fileLock.unlock();
         }
-        fileLock.unlock();
     }
 }

@@ -7,14 +7,21 @@ import com.parfyonoff.webscraper.config.APIClientsConfig;
 import com.parfyonoff.webscraper.threadmanagement.MultiThreadingConfig;
 
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Scanner;
 
 public class CliRunner {
     private final Scanner scanner;
+    private final ApplicationBuilder applicationBuilder;
 
-    public CliRunner() {
-        scanner = new Scanner(System.in);
+    public CliRunner(Scanner scanner, ApplicationBuilder applicationBuilder) {
+        if (scanner == null || applicationBuilder == null) {
+            throw new CliException("Scanner or ApplicationBuilder is null");
+        }
+
+        this.scanner = scanner;
+        this.applicationBuilder = applicationBuilder;
     }
 
     public void start() {
@@ -29,11 +36,23 @@ public class CliRunner {
         System.out.println("Please choose do you want to print to console all info in file (all), or for exact api (allowed: " + APIClientsConfig.getApiClientsNames() + "):");
         String choiceToPrint = scanner.nextLine();
         System.out.println("Please enter your maximum number of tasks can be taken at the exact moment:");
-        Integer maxTasks = scanner.nextInt();
+        int maxTasks;
+        try {
+            maxTasks = scanner.nextInt();
+        } catch (InputMismatchException exc) {
+            scanner.nextLine();
+            throw new CliException("Input mismatch exception while reading maxTasks: " + exc.getMessage());
+        }
         System.out.println("Please enter the interval for api polling:");
-        Integer interval = scanner.nextInt();
+        int interval;
+        try {
+            interval = scanner.nextInt();
+        } catch (InputMismatchException exc) {
+            scanner.nextLine();
+            throw new CliException("Input mismatch exception while reading polling interval: " + exc.getMessage());
+        }
 
-        ApplicationExecutor applicationExecutor = new ApplicationBuilder().build(
+        ApplicationExecutor applicationExecutor = applicationBuilder.build(
                 new ExecutionConfig(
                         apiNamesToScrap, fileName, rewrite, choiceToPrint
                 ),
@@ -45,7 +64,7 @@ public class CliRunner {
 
     public void runAppAndAwaitForStop(ApplicationExecutor applicationExecutor) {
         if (applicationExecutor == null) {
-            throw new CliException("Application Executor could not be null.");
+            throw new CliException("Application Executor cant be null");
         }
 
         applicationExecutor.run();
